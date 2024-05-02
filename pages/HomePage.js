@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 export default function HomePage() {
   return (
     <View style={styles.container}>
-      <Text>Welcome to the Home Page!</Text>
+      <Text>Home Page!</Text>
     </View>
   );
 }

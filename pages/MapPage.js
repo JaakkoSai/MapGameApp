@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Button, Alert } from "react-native";
+import { Button, Alert, Text, View } from "react-native";
 import MapView, { Polyline, Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { getDatabase, ref, push, set, onValue } from "firebase/database";
 import { auth } from "../firebaseConfig";
+import axios from "axios";
 
 export default function MapPage() {
   const [path, setPath] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState(null);
+  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
-    // Request location permission
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -22,7 +23,11 @@ export default function MapPage() {
         );
         return;
       }
+
+      // Fetch weather data whenever the location changes
+      locationSubscription && fetchWeather(currentLocation);
     })();
+
     // Fetch stored paths if user is logged in
     if (auth.currentUser) {
       const userId = auth.currentUser.uid;
@@ -42,7 +47,22 @@ export default function MapPage() {
     return () => {
       locationSubscription?.remove();
     };
-  }, [locationSubscription]);
+  }, [locationSubscription, currentLocation]);
+
+  const fetchWeather = (location) => {
+    if (!location) return;
+    const owmapikey = process.env.EXPO_PUBLIC_OWM_API_KEY;
+    const owmurl = `https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=${owmapikey}&units=metric`;
+
+    axios
+      .get(owmurl)
+      .then((response) => {
+        setWeather(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching weather data:", error);
+      });
+  };
 
   const startTracking = async () => {
     setIsTracking(true);
@@ -58,7 +78,8 @@ export default function MapPage() {
           longitude: locationUpdate.coords.longitude,
         };
         setPath((currentPath) => [...currentPath, newLocation]);
-        setCurrentLocation(newLocation); // Update current location state
+        setCurrentLocation(newLocation);
+        fetchWeather(newLocation);
       }
     );
     setLocationSubscription(subscription);
@@ -114,6 +135,12 @@ export default function MapPage() {
         <Button title="Start Tracking" onPress={startTracking} />
       ) : (
         <Button title="Stop Tracking" onPress={stopTracking} />
+      )}
+      {weather && (
+        <View style={{ padding: 20, backgroundColor: "white" }}>
+          <Text>Temperature: {weather.main.temp}°C</Text>
+          <Text>Weather: {weather.weather[0].description}</Text>
+        </View>
       )}
     </>
   );
