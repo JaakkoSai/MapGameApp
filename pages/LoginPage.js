@@ -3,35 +3,57 @@ import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import FormButton from "../components/FormButton";
 import SocialButton from "../components/SocialButton";
 import FormInput from "../components/FormInput";
+import auth from "@react-native-firebase/auth";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
-export default function LoginScreen({ navigation }) {
+export default function LoginPage({ navigation }) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
 
+  const handleLogin = () => {
+    if (email === "" || password === "") {
+      Alert.alert("Please enter email and password!");
+      return;
+    }
+    auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log("User signed in!");
+        navigation.navigate("Home"); // Assuming 'Home' is your home screen
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        Alert.alert(error.message);
+      });
+  };
+
+  async function onGoogleButtonPress() {
+    const { idToken } = await GoogleSignin.signIn();
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    return auth().signInWithCredential(googleCredential);
+  }
+
   return (
     <View style={styles.container}>
-      <Image source={require("../assets/oggy.png")} style={styles.logo} />
+      <Image source={require("../assets/Maplogo.webp")} style={styles.logo} />
       <Text style={styles.text}>Map Unlock App</Text>
       <FormInput
         labelValue={email}
-        onChangeText={(userEmail) => setEmail(userEmail)}
-        placeholderText={"Email"}
-        iconType={"user"}
-        keyboardType={"email-address"}
-        autoCapitalize={"none"}
+        onChangeText={setEmail}
+        placeholderText="Email"
+        iconType="user"
+        keyboardType="email-address"
+        autoCapitalize="none"
         autoCorrect={false}
       />
       <FormInput
         labelValue={password}
-        onChangeText={(userPassword) => setPassword(userPassword)}
-        placeholderText={"Password"}
-        iconType={"lock"}
+        onChangeText={setPassword}
+        placeholderText="Password"
+        iconType="lock"
         secureTextEntry={true}
       />
-      <FormButton
-        buttonTitle={"Sign in"}
-        onPress={() => alert("Sign in clicked!")}
-      />
+      <FormButton buttonTitle="Sign in" onPress={handleLogin} />
 
       <TouchableOpacity style={styles.forgotButton} onPress={() => {}}>
         <Text style={styles.navButtonText}>Forgot Password?</Text>
@@ -50,7 +72,7 @@ export default function LoginScreen({ navigation }) {
         btnType="google"
         color="#de4d41"
         backgroundColor="#f5e7ea"
-        onPress={() => {}}
+        onPress={onGoogleButtonPress}
       />
 
       <TouchableOpacity

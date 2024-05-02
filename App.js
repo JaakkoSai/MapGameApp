@@ -10,15 +10,21 @@ import SignupScreen from "./pages/SignupPage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+GoogleSignin.configure({
+  webClientId: Config.WEB_CLIENT_ID,
+});
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCuMiE-RxfU7ztepPRZ6dWbuVd5QZnUyEA",
-  authDomain: "mapapp-9f313.firebaseapp.com",
-  projectId: "mapapp-9f313",
-  storageBucket: "mapapp-9f313.appspot.com",
-  messagingSenderId: "834274424954",
-  appId: "1:834274424954:web:b279d6a385dd875b9aa3c3",
-  measurementId: "G-9XK00WPPZK",
+  apiKey: Config.FIREBASE_API_KEY,
+  authDomain: Config.FIREBASE_AUTH_DOMAIN,
+  databaseURL: Config.FIREBASE_DATABASE_URL,
+  projectId: Config.FIREBASE_PROJECT_ID,
+  storageBucket: Config.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: Config.FIREBASE_MESSAGING_SENDER_ID,
+  appId: Config.FIREBASE_APP_ID,
+  measurementId: Config.FIREBASE_MEASUREMENT_ID,
 };
 
 // init firebase

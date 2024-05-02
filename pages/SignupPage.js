@@ -3,11 +3,35 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import FormButton from "../components/FormButton";
 import SocialButton from "../components/SocialButton";
 import FormInput from "../components/FormInput";
+import auth from "@react-native-firebase/auth";
 
-export default function SignupScreen({ navigation }) {
+export default function SignupPage({ navigation }) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
+
+  const handleSignUp = () => {
+    if (password !== confirmPassword) {
+      Alert.alert("Passwords do not match!");
+      return;
+    }
+    auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log("User account created & signed in!");
+        navigation.navigate("Home");
+      })
+      .catch((error) => {
+        console.error("Cannot sign up:", error);
+        Alert.alert(error.message);
+      });
+  };
+
+  async function onGoogleButtonPress() {
+    const { idToken } = await GoogleSignin.signIn();
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    return auth().signInWithCredential(googleCredential);
+  }
 
   return (
     <View style={styles.container}>
@@ -38,10 +62,7 @@ export default function SignupScreen({ navigation }) {
         secureTextEntry={true}
       />
 
-      <FormButton
-        buttonTitle={"Sign up"}
-        onPress={() => alert("Sign up clicked!")}
-      />
+      <FormButton buttonTitle={"Sign up"} onPress={handleSignUp} />
 
       <View style={styles.textPrivate}>
         <Text style={styles.color_textPrivate}>
@@ -73,7 +94,7 @@ export default function SignupScreen({ navigation }) {
         btnType="google"
         color="#de4d41"
         backgroundColor="#f5e7ea"
-        onPress={() => {}}
+        onPress={onGoogleButtonPress}
       />
 
       <TouchableOpacity

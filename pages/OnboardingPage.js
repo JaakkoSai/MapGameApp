@@ -35,7 +35,7 @@ const Done = ({ ...props }) => (
   </TouchableOpacity>
 );
 
-function OnboardingScreen({ navigation }) {
+function OnboardingPage({ navigation }) {
   return (
     <Onboarding
       SkipButtonComponent={Skip}
@@ -47,25 +47,19 @@ function OnboardingScreen({ navigation }) {
       pages={[
         {
           backgroundColor: "#a6e4d0",
-          image: (
-            <Image source={require("../assets/images/onboarding-img1.png")} />
-          ),
+          image: <Image source={require("../assets/onboarding-img1.png")} />,
           title: "Explore",
           subtitle: "A new way to explore your environment",
         },
         {
           backgroundColor: "#fdeb93",
-          image: (
-            <Image source={require("../assets/images/onboarding-img2.png")} />
-          ),
+          image: <Image source={require("../assets/onboarding-img2.png")} />,
           title: "Track",
           subtitle: "Keep track of every place you have been to",
         },
         {
           backgroundColor: "#fff",
-          image: (
-            <Image source={require("../assets/images/onboarding-img3.png")} />
-          ),
+          image: <Image source={require("../assets/onboarding-img3.png")} />,
           title: "Compete",
           subtitle: "Compete with friends & family",
         },
@@ -82,4 +76,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnboardingScreen;
+export default OnboardingPage;
