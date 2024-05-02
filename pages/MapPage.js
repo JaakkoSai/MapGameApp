@@ -1,22 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "react-native";
-import MapView, { Polyline } from "react-native-maps";
+import { Button, Alert } from "react-native";
+import MapView, { Polyline, Marker } from "react-native-maps";
 import * as Location from "expo-location";
-import { getDatabase, ref, push, set } from "firebase/database";
+import { getDatabase, ref, push, set, onValue } from "firebase/database";
+import { auth } from "../firebaseConfig";
 
 export default function MapPage() {
   const [path, setPath] = useState([]);
+  const [currentLocation, setCurrentLocation] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState(null);
 
   useEffect(() => {
+    // Request location permission
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        console.error("Permission to access location was denied");
+        Alert.alert(
+          "Permission Denied",
+          "Permission to access location was denied"
+        );
         return;
       }
     })();
+    // Fetch stored paths if user is logged in
+    if (auth.currentUser) {
+      const userId = auth.currentUser.uid;
+      const db = getDatabase();
+      const userPathRef = ref(db, `users/${userId}/paths`);
+      onValue(userPathRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const allPaths = [];
+          Object.keys(data).forEach((key) => {
+            allPaths.push(...data[key]);
+          });
+          setPath(allPaths);
+        }
+      });
+    }
     return () => {
       locationSubscription?.remove();
     };
@@ -36,6 +58,7 @@ export default function MapPage() {
           longitude: locationUpdate.coords.longitude,
         };
         setPath((currentPath) => [...currentPath, newLocation]);
+        setCurrentLocation(newLocation); // Update current location state
       }
     );
     setLocationSubscription(subscription);
@@ -46,11 +69,17 @@ export default function MapPage() {
     setIsTracking(false);
     setLocationSubscription(null);
 
-    const db = getDatabase();
-    const pathRef = ref(db, "/paths");
-    const newPathRef = push(pathRef);
+    const userId = auth.currentUser.uid;
 
-    // Correct use of set
+    if (!userId) {
+      console.error("No user logged in");
+      return;
+    }
+
+    const db = getDatabase();
+    const userPathRef = ref(db, `users/${userId}/paths`);
+    const newPathRef = push(userPathRef);
+
     set(newPathRef, path)
       .then(() => {
         console.log("Path saved successfully!");
@@ -62,13 +91,24 @@ export default function MapPage() {
 
   return (
     <>
-      <MapView style={{ flex: 1 }}>
+      <MapView
+        style={{ flex: 1 }}
+        initialRegion={{
+          latitude: currentLocation?.latitude || 60.192059,
+          longitude: currentLocation?.longitude || 24.945831,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
         <Polyline
           testID="polyline"
           coordinates={path}
           strokeColor="#000"
           strokeWidth={3}
         />
+        {currentLocation && (
+          <Marker coordinate={currentLocation} title="Your Location" />
+        )}
       </MapView>
       {!isTracking ? (
         <Button title="Start Tracking" onPress={startTracking} />

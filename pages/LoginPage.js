@@ -1,25 +1,36 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import FormButton from "../components/FormButton";
 import SocialButton from "../components/SocialButton";
 import FormInput from "../components/FormInput";
-import auth from "@react-native-firebase/auth";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import {
+  signInWithEmailAndPassword,
+  // GoogleAuthProvider,
+  // signInWithCredential,
+} from "firebase/auth";
+import { auth } from "../firebaseConfig";
+// import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function LoginPage({ navigation }) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
 
   const handleLogin = () => {
-    if (email === "" || password === "") {
+    if (!email || !password) {
       Alert.alert("Please enter email and password!");
       return;
     }
-    auth()
-      .signInWithEmailAndPassword(email, password)
+    signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         console.log("User signed in!");
-        navigation.navigate("Home"); // Assuming 'Home' is your home screen
+        navigation.replace("MainApp");
       })
       .catch((error) => {
         console.error("Login failed:", error);
@@ -27,11 +38,11 @@ export default function LoginPage({ navigation }) {
       });
   };
 
-  async function onGoogleButtonPress() {
-    const { idToken } = await GoogleSignin.signIn();
-    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-    return auth().signInWithCredential(googleCredential);
-  }
+  // async function onGoogleButtonPress() {
+  //   const { idToken } = await GoogleSignin.signIn();
+  //   const googleCredential = GoogleAuthProvider.credential(idToken);
+  //   return signInWithCredential(auth, googleCredential);
+  // }
 
   return (
     <View style={styles.container}>
@@ -72,7 +83,7 @@ export default function LoginPage({ navigation }) {
         btnType="google"
         color="#de4d41"
         backgroundColor="#f5e7ea"
-        onPress={onGoogleButtonPress}
+        // onPress={onGoogleButtonPress}
       />
 
       <TouchableOpacity

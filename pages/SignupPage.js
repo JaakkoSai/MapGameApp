@@ -1,9 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import FormButton from "../components/FormButton";
 import SocialButton from "../components/SocialButton";
 import FormInput from "../components/FormInput";
-import auth from "@react-native-firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  // GoogleAuthProvider,
+  // signInWithCredential,
+} from "firebase/auth";
+// import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { auth } from "../firebaseConfig";
 
 export default function SignupPage({ navigation }) {
   const [email, setEmail] = useState();
@@ -15,11 +21,10 @@ export default function SignupPage({ navigation }) {
       Alert.alert("Passwords do not match!");
       return;
     }
-    auth()
-      .createUserWithEmailAndPassword(email, password)
+    createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
         console.log("User account created & signed in!");
-        navigation.navigate("Home");
+        navigation.replace("MainApp");
       })
       .catch((error) => {
         console.error("Cannot sign up:", error);
@@ -27,11 +32,11 @@ export default function SignupPage({ navigation }) {
       });
   };
 
-  async function onGoogleButtonPress() {
-    const { idToken } = await GoogleSignin.signIn();
-    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-    return auth().signInWithCredential(googleCredential);
-  }
+  // async function onGoogleButtonPress() {
+  //   const { idToken } = await GoogleSignin.signIn();
+  //   const googleCredential = GoogleAuthProvider.credential(idToken);
+  //   return signInWithCredential(auth, googleCredential);
+  // }
 
   return (
     <View style={styles.container}>
@@ -94,7 +99,8 @@ export default function SignupPage({ navigation }) {
         btnType="google"
         color="#de4d41"
         backgroundColor="#f5e7ea"
-        onPress={onGoogleButtonPress}
+        // onPress={onGoogleButtonPress}
+        onPress={() => {}}
       />
 
       <TouchableOpacity
